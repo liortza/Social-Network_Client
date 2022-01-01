@@ -4,15 +4,27 @@
 #include <string>
 #include <iostream>
 #include <boost/asio.hpp>
+#include <boost/algorithm/string/replace.hpp>
 
 using boost::asio::ip::tcp;
+using boost::range_detail::string_;
 
 class ConnectionHandler {
 private:
 	const std::string host_;
 	const short port_;
 	boost::asio::io_service io_service_;   // Provides core I/O functionality
-	tcp::socket socket_; 
+	tcp::socket socket_;
+    std::string registerToBytes(const std::string& message);
+    std::string loginToBytes(const std::string& message);
+    std::string logoutToBytes(const std::string& message);
+    std::string followToBytes(const std::string& message);
+    std::string postToBytes(const std::string& message);
+    std::string pmToBytes(const std::string& message);
+    std::string logstatToBytes(const std::string& message);
+    std::string statToBytes(const std::string& message);
+    std::string blockToBytes(const std::string& message);
+    void decode(std::string &frame);
  
 public:
     ConnectionHandler(std::string host, short port);
