@@ -1,7 +1,7 @@
 #include <connectionHandler.h>
 
 using boost::asio::ip::tcp;
-using boost::range_detail::string_;
+//using boost::range_detail::string_;
 
 using std::cin;
 using std::cout;
@@ -93,7 +93,7 @@ bool ConnectionHandler::getFrameAscii(std::string &frame, char delimiter) {
 void ConnectionHandler::decode(std::string &frame) {
     std::string opcode = frame.substr(0, 2);
     if (opcode == "09") { // notification
-        boost::replace_all(frame, "\0", " ");
+        //boost::replace_all(frame, "\0", " ");
         if (frame.at(2) == '0') frame = "NOTIFICATION PM " + frame.substr(3, frame.length() - 3);
         else frame = "NOTIFICATION Public " + frame.substr(3, frame.length() - 3);
     } else if (opcode == "10") frame = "ACK " + frame.substr(2, frame.length() - 2); // ack
@@ -122,12 +122,12 @@ bool ConnectionHandler::sendFrameAscii(const std::string &frame, char delimiter)
 
 // region TO_BYTES
 std::string ConnectionHandler::registerToBytes(const string &message) {
-    boost::replace_all(message, " ", "\0");
+    //boost::replace_all(message, " ", "\0");
     return "01" + message;
 }
 
 std::string ConnectionHandler::loginToBytes(const string &message) {
-    boost::replace_all(message, " ", "\0");
+    //boost::replace_all(message, " ", "\0");
     return "02" + message;
 }
 
@@ -136,7 +136,7 @@ std::string ConnectionHandler::logoutToBytes(const string &message) {
 }
 
 std::string ConnectionHandler::followToBytes(const string &message) {
-    boost::replace_all(message, " ", "\0");
+    //boost::replace_all(message, " ", "\0");
     return "04" + message;
 }
 
@@ -145,7 +145,7 @@ std::string ConnectionHandler::postToBytes(const string &message) {
 }
 
 std::string ConnectionHandler::pmToBytes(const string &message) {
-    boost::replace_first(message, " ", "\0");
+    //boost::replace_first(message, " ", "\0");
     char time_buf[16];
     time_t now;
     time(&now);
@@ -159,7 +159,7 @@ std::string ConnectionHandler::logstatToBytes(const string &message) {
 }
 
 std::string ConnectionHandler::statToBytes(const string &message) {
-    boost::replace_all(message, " ", "|");
+    //boost::replace_all(message, " ", "|");
     return "08" + message + "\0";
 }
 

@@ -4,10 +4,10 @@
 #include <string>
 #include <iostream>
 #include <boost/asio.hpp>
-#include <boost/algorithm/string/replace.hpp>
+//#include <boost/algorithm/string/replace.hpp>
 
 using boost::asio::ip::tcp;
-using boost::range_detail::string_;
+//using boost::range_detail::string_;
 
 class ConnectionHandler {
 private:
