@@ -10,6 +10,7 @@ void Reader::read() {
     while (!_shouldTerminate) {
         const short bufsize = 1024;
         char buf[bufsize];
+        std::cout << "in read func" << std::endl;
         std::cin.getline(buf, bufsize);
         std::string line(buf);
         int len = line.length();
