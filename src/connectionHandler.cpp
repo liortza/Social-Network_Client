@@ -10,7 +10,7 @@ using std::endl;
 using std::string;
 
 ConnectionHandler::ConnectionHandler(string host, short port) : host_(host), port_(port), io_service_(),
-                                                                socket_(io_service_) {}
+                                                                socket_(io_service_), opcode(-1) {}
 
 ConnectionHandler::~ConnectionHandler() {
     close();
@@ -118,56 +118,95 @@ bool ConnectionHandler::sendFrameAscii(const std::string &frame, char delimiter)
     else if (type == "LOGSTAT") toSend = logstatToBytes(message);
     else if (type == "STAT") toSend = statToBytes(message);
     else toSend = blockToBytes(message);
-    result = sendBytes(toSend.c_str(), toSend.length());
+    char opBytes[2];
+    shortToBytes(opcode, opBytes);
+//    std::vector<char> bytesToSend;
+//    bytesToSend.push_back(opBytes[0]);
+//    bytesToSend.push_back(opBytes[1]);
+//    const char* p = &bytesToSend[0];
+//    for (char c: toSend) bytesToSend.push_back(c);
+//    std::cout << "opcode: " << opcode << std::endl;
+//    std::cout << "after to short: " << bytesToShort(opBytes) << std::endl;
+//    std::cout << "message: " << toSend << std::endl;
+//    for (int i = 0; i < bytesToSend.size(); i++) {
+//        std::cout << "char " << i << ": " << p[i] << std::endl;
+//    }
+    //result = sendBytes(p, bytesToSend.size());
+    result = sendBytes(opBytes, 2);
     if (!result) return false;
-    return sendBytes(&delimiter, 1);
+    return true;
+    //result = sendBytes(toSend.c_str(), toSend.length());
+    //if (!result) return false;
+    //return sendBytes(&delimiter, 1);
+}
+
+void ConnectionHandler::shortToBytes(short num, char* bytesArr) {
+    std::cout << "here" << std::endl;
+    bytesArr[0] = ((num >> 8) & 0xFF);
+    bytesArr[1] = (num & 0xFF);
+    std::cout << "here2" << std::endl;
+}
+
+short ConnectionHandler::bytesToShort(char* bytesArr) {
+    short result = (short)((bytesArr[0] & 0xff) << 8);
+    result += (short)(bytesArr[1] & 0xff);
+    return result;
 }
 
 // region TO_BYTES
 std::string ConnectionHandler::registerToBytes(const string &message) {
     //boost::replace_all(message, " ", "\0");
-    return "01" + message;
+    opcode = 1;
+    return message;
 }
 
 std::string ConnectionHandler::loginToBytes(const string &message) {
     //boost::replace_all(message, " ", "\0");
-    return "02" + message;
+    opcode = 2;
+    return message;
 }
 
 std::string ConnectionHandler::logoutToBytes(const string &message) {
-    return "03";
+    opcode = 3;
+    return "";
 }
 
 std::string ConnectionHandler::followToBytes(const string &message) {
     //boost::replace_all(message, " ", "\0");
-    return "04" + message;
+    opcode = 4;
+    return message;
 }
 
 std::string ConnectionHandler::postToBytes(const string &message) {
-    return "05" + message + "\0";
+    opcode = 5;
+    return message + "\0";
 }
 
 std::string ConnectionHandler::pmToBytes(const string &message) {
     //boost::replace_first(message, " ", "\0");
+    opcode = 6;
     char time_buf[16];
     time_t now;
     time(&now);
     strftime(time_buf, 16, "%d-%m-%Y %H:%M", gmtime(&now));
     std::string time = time_buf;
-    return "06" + message + "\0" + time + "\0";
+    return message + "\0" + time + "\0";
 }
 
 std::string ConnectionHandler::logstatToBytes(const string &message) {
-    return "07";
+    opcode = 7;
+    return "";
 }
 
 std::string ConnectionHandler::statToBytes(const string &message) {
     //boost::replace_all(message, " ", "|");
-    return "08" + message + "\0";
+    opcode = 8;
+    return message + "\0";
 }
 
 std::string ConnectionHandler::blockToBytes(const string &message) {
-    return "12" + message + "\0";
+    opcode = 12;
+    return message + "\0";
 }
 // endregion
 
