@@ -8,8 +8,8 @@ using std::cerr;
 using std::endl;
 using std::string;
 
-ConnectionHandler::ConnectionHandler(string host, short port) : host_(host), port_(port), io_service_(),
-                                                                socket_(io_service_), opcode(-1) {}
+ConnectionHandler::ConnectionHandler(string host, short port) : host_(host), port_(port),
+                                                                io_service_(), socket_(io_service_), opcode(-1) {}
 
 ConnectionHandler::~ConnectionHandler() {
     close();
@@ -42,8 +42,8 @@ bool ConnectionHandler::getBytes(char bytes[], unsigned int bytesToRead) {
         if (error)
             throw boost::system::system_error(error);
     } catch (std::exception &e) {
-        //std::cerr << "recv failed (Error: " << e.what() << ')' << std::endl;
-        //std::cout << "getBytes" << std::endl;
+//        std::cerr << "recv failed (Error: " << e.what() << ')' << std::endl;
+//        std::cout << "getBytes" << std::endl;
         return false;
     }
     return true;
@@ -60,7 +60,6 @@ bool ConnectionHandler::sendBytes(const char bytes[], int bytesToWrite) {
             throw boost::system::system_error(error);
     } catch (std::exception &e) {
         std::cerr << "recv failed (Error: " << e.what() << ')' << std::endl;
-        std::cout << "sendBytes" << std::endl;
         return false;
     }
     return true;
@@ -93,19 +92,19 @@ bool ConnectionHandler::getFrameAscii(std::string &frame, char delimiter) {
 }
 
 void ConnectionHandler::decode(std::string &frame) {
-    std::cout << "decode" << std::endl;
     opcode = stringToOpcode(frame);
-    std::cout << "frame after opcode: " << frame << std::endl;
     if (opcode == 9) { // notification
+        std::cout << frame << std::endl;
         replaceAll(frame, '\0', ' ');
-        if (frame.at(2) == '0') frame = "NOTIFICATION PM " + frame.substr(1, frame.length() - 1);
-        else frame = "NOTIFICATION Public " + frame.substr(1, frame.length() - 1);
+        std::cout << frame << std::endl;
+        if (frame.at(0) == '0') frame = "NOTIFICATION PM " + frame.substr(1);
+        else frame = "NOTIFICATION Public " + frame.substr(1);
     } else if (opcode == 10) { // ack
         short msgOpcode = stringToOpcode(frame);
-        frame = "ACK " + msgOpcode;
-    } else {
+        frame = "ACK " + std::to_string(msgOpcode) + ";";
+    } else { // error
         short msgOpcode = stringToOpcode(frame);
-        frame = "ERROR " + msgOpcode + frame; // error
+        frame = "ERROR " + std::to_string(msgOpcode) + frame;
     }
 }
 
@@ -141,21 +140,19 @@ bool ConnectionHandler::sendFrameAscii(const std::string &frame, char delimiter)
     return sendBytes(&delimiter, 1);
 }
 
-void ConnectionHandler::shortToBytes(short num, char* bytesArr) {
+void ConnectionHandler::shortToBytes(short num, char *bytesArr) {
     bytesArr[0] = ((num >> 8) & 0xFF);
     bytesArr[1] = (num & 0xFF);
 }
 
-short ConnectionHandler::bytesToShort(char* bytesArr) {
-    std::cout << "here" << std::endl;
-    short result = (short)((bytesArr[0] & 0xff) << 8);
-    result += (short)(bytesArr[1] & 0xff);
-    std::cout << "here 2" << std::endl;
+short ConnectionHandler::bytesToShort(char *bytesArr) {
+    short result = (short) ((bytesArr[0] & 0xff) << 8);
+    result += (short) (bytesArr[1] & 0xff);
     return result;
 }
 
 void ConnectionHandler::replaceAll(std::string &string, char toReplace, char toPut) {
-    for (int i = 0; i < (int)string.length(); i++) {
+    for (int i = 0; i < (int) string.length(); i++) {
         if (string[i] == toReplace) string[i] = toPut;
     }
 }
@@ -193,12 +190,16 @@ std::string ConnectionHandler::pmToBytes(string &message) {
     int index = message.find(' ');
     message[index] = '\0';
     opcode = 6;
-    char time_buf[16];
-    time_t now;
-    time(&now);
-    strftime(time_buf, 16, "%d-%m-%Y %H:%M", gmtime(&now));
-    std::string time = time_buf;
-    return message + "\0" + time;
+    time_t rawtime;
+    struct tm * timeinfo;
+    char buffer[80];
+    time (&rawtime);
+    timeinfo = localtime(&rawtime);
+    strftime(buffer,sizeof(buffer),"%d-%m-%Y %H:%M",timeinfo);
+    std::string str(buffer);
+    message.append('\0' + str);
+    std::cout << message << std::endl;
+    return message;
 }
 
 std::string ConnectionHandler::logstatToBytes(string &message) {

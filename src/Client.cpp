@@ -24,8 +24,6 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    std::cout << "main" << std::endl;
-
     bool shouldTerminate = false;
     Reader readerTask(connectionHandler, shouldTerminate);
     Writer writerTask(connectionHandler, shouldTerminate);
