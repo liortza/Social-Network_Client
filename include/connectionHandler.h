@@ -4,10 +4,10 @@
 #include <string>
 #include <iostream>
 #include <boost/asio.hpp>
-//#include <boost/algorithm/string/replace.hpp>
+#include <boost/algorithm/string/replace.hpp>
 
 using boost::asio::ip::tcp;
-//using boost::range_detail::string_;
+using boost::range_detail::string_;
 
 class ConnectionHandler {
 private:
@@ -18,16 +18,18 @@ private:
     short opcode;
     void shortToBytes(short num, char* bytesArr);
     short bytesToShort(char* bytesArr);
-    std::string registerToBytes(const std::string& message);
-    std::string loginToBytes(const std::string& message);
-    std::string logoutToBytes(const std::string& message);
-    std::string followToBytes(const std::string& message);
-    std::string postToBytes(const std::string& message);
-    std::string pmToBytes(const std::string& message);
-    std::string logstatToBytes(const std::string& message);
-    std::string statToBytes(const std::string& message);
-    std::string blockToBytes(const std::string& message);
+    void replaceAll(std::string& string, char toReplace, char toPut);
+    std::string registerToBytes(std::string& message);
+    std::string loginToBytes(std::string& message);
+    std::string logoutToBytes(std::string& message);
+    std::string followToBytes(std::string& message);
+    std::string postToBytes(std::string& message);
+    std::string pmToBytes(std::string& message);
+    std::string logstatToBytes(std::string& message);
+    std::string statToBytes(std::string& message);
+    std::string blockToBytes(std::string& message);
     void decode(std::string &frame);
+    short stringToOpcode(std::string &frame);
 
 public:
     ConnectionHandler(std::string host, short port);
