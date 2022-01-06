@@ -42,8 +42,8 @@ bool ConnectionHandler::getBytes(char bytes[], unsigned int bytesToRead) {
         if (error)
             throw boost::system::system_error(error);
     } catch (std::exception &e) {
-//        std::cerr << "recv failed (Error: " << e.what() << ')' << std::endl;
-//        std::cout << "getBytes" << std::endl;
+        std::cerr << "recv failed (Error: " << e.what() << ')' << std::endl;
+        std::cout << "getBytes" << std::endl;
         return false;
     }
     return true;
@@ -94,14 +94,20 @@ bool ConnectionHandler::getFrameAscii(std::string &frame, char delimiter) {
 void ConnectionHandler::decode(std::string &frame) {
     opcode = stringToOpcode(frame);
     if (opcode == 9) { // notification
-        std::cout << frame << std::endl;
+        std::string type = "PM ";
+        if (frame[0] == 1) type = "POST ";
+        frame = frame.substr(1);
         replaceAll(frame, '\0', ' ');
-        std::cout << frame << std::endl;
-        if (frame.at(0) == '0') frame = "NOTIFICATION PM " + frame.substr(1);
-        else frame = "NOTIFICATION Public " + frame.substr(1);
+        frame = "NOTIFICATION " + type + frame;
     } else if (opcode == 10) { // ack
         short msgOpcode = stringToOpcode(frame);
-        frame = "ACK " + std::to_string(msgOpcode) + ";";
+        if (msgOpcode == 4) // FOLLOW ACK
+            frame = "ACK " + std::to_string(msgOpcode) + " " + frame;
+        else if (msgOpcode == 7 || msgOpcode == 8) { // LOGSTAT/STAT ACK
+            for (int i = 0; i < 4; i++)
+                frame.append(" " + std::to_string(stringToOpcode(frame)));
+            frame = "ACK " + std::to_string(msgOpcode) + frame.substr(1) + ";";
+        } else frame = "ACK " + std::to_string(msgOpcode) + ";";
     } else { // error
         short msgOpcode = stringToOpcode(frame);
         frame = "ERROR " + std::to_string(msgOpcode) + frame;
@@ -198,7 +204,6 @@ std::string ConnectionHandler::pmToBytes(string &message) {
     strftime(buffer,sizeof(buffer),"%d-%m-%Y %H:%M",timeinfo);
     std::string str(buffer);
     message.append('\0' + str);
-    std::cout << message << std::endl;
     return message;
 }
 
