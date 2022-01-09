@@ -7,9 +7,10 @@ class Reader {
 private:
     ConnectionHandler &_handler;
     bool &_shouldTerminate;
+    bool &_logout;
 
 public:
-    Reader(ConnectionHandler &handler, bool &shouldTerminate);
+    Reader(ConnectionHandler &handler, bool &shouldTerminate, bool &logout);
     void read();
 };
 

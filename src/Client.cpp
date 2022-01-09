@@ -24,9 +24,9 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    bool shouldTerminate = false;
-    Reader readerTask(connectionHandler, shouldTerminate);
-    Writer writerTask(connectionHandler, shouldTerminate);
+    bool shouldTerminate = false, logout = false;
+    Reader readerTask(connectionHandler, shouldTerminate, logout);
+    Writer writerTask(connectionHandler, shouldTerminate, logout);
 
     std::thread readerThread(&Reader::read, &readerTask);
     std::thread writerThread(&Writer::write, &writerTask);
