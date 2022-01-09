@@ -2,7 +2,9 @@
 #include <connectionHandler.h>
 #include <iostream>
 
-Writer::Writer(ConnectionHandler &handler, bool &shouldTerminate) : _handler(handler), _shouldTerminate(shouldTerminate) {}
+Writer::Writer(ConnectionHandler &handler, bool &shouldTerminate, bool &logout) : _handler(handler),
+                                                                                  _shouldTerminate(shouldTerminate),
+                                                                                  _logout(logout) {}
 
 void Writer::write() {
     while (1) {
@@ -19,6 +21,8 @@ void Writer::write() {
             std::cout << "Exiting...\n" << std::endl;
             _shouldTerminate = true;
             break;
+        } else if (answer == "ERROR 3") {
+            _logout = false;
         }
     }
 }

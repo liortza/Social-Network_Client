@@ -7,9 +7,10 @@ class Writer {
 private:
     ConnectionHandler &_handler;
     bool &_shouldTerminate;
+    bool &_logout;
 
 public:
-    Writer(ConnectionHandler &handler, bool &shouldTerminate);
+    Writer(ConnectionHandler &handler, bool &shouldTerminate, bool &logout);
     void write();
 };
 
